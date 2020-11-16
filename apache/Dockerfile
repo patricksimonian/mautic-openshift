@@ -40,10 +40,10 @@ ENV PHP_INI_DATE_TIMEZONE='UTC' \
     
 RUN curl -o mautic.zip -SL https://github.com/mautic/mautic/releases/download/${MAUTIC_VERSION}/${MAUTIC_VERSION}.zip \
     && echo "$MAUTIC_SHA1 *mautic.zip" | sha1sum -c - \
-    && mkdir /usr/src/mautic \
-    && unzip mautic.zip -d /usr/src/mautic \
+    && mkdir /var/www/html \
+    && unzip mautic.zip -d /var/www/html \
     && rm mautic.zip
-RUN ls -la
+
 # Copy init scripts and custom .htaccess
 COPY docker-entrypoint.sh /entrypoint.sh
 COPY makeconfig.php /makeconfig.php
