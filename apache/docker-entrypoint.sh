@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ ! -f /usr/local/etc/php/php.ini ]; then
+if [ ! -f /usr/local/etc/php/php.ini-production ]; then
 cat <<EOF > /usr/local/etc/php/php.ini
 date.timezone = "${PHP_INI_DATE_TIMEZONE}"
 always_populate_raw_post_data = -1
