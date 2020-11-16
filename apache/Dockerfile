@@ -40,7 +40,6 @@ ENV PHP_INI_DATE_TIMEZONE='UTC' \
     
 RUN curl -o mautic.zip -SL https://github.com/mautic/mautic/releases/download/${MAUTIC_VERSION}/${MAUTIC_VERSION}.zip \
     && echo "$MAUTIC_SHA1 *mautic.zip" | sha1sum -c - \
-    && mkdir /var/www/html \
     && unzip mautic.zip -d /var/www/html \
     && rm mautic.zip
 
