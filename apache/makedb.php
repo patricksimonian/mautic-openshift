@@ -5,10 +5,12 @@ fwrite($stderr, "\nEnsuring Mautic database is present\n");
 
 if (strpos($argv[1], ':') !== false)
 {
+	fwrite($stderr, "we are in the if block!");
 	list($host, $port) = explode(':', $argv[1], 2);
 }
 else
 {
+	fwrite($stderr, "we are in the else block!");
 	$host = $argv[1];
 	$port = 3306;
 }
