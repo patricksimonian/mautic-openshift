@@ -10,8 +10,8 @@ objects:
           protocol: TCP
           targetPort: 8080
       selector:
-        app: mautic-openshift
-        deploymentconfig: mautic-openshift
+        app: ${NAME}
+        deploymentconfig: ${NAME}
       sessionAffinity: None
       type: ClusterIP
     metadata:
@@ -20,11 +20,11 @@ objects:
         app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
         openshift.io/generated-by: OpenShiftWebConsole
       labels:
-        app: mautic-openshift
-        app.kubernetes.io/component: mautic-openshift
-        app.kubernetes.io/instance: mautic-openshift
+        app: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
-      name: mautic-openshift
+      name: ${NAME}
 
   - apiVersion: apps/v1
     kind: Deployment
@@ -34,7 +34,7 @@ objects:
       revisionHistoryLimit: 10
       selector:
         matchLabels:
-          app: mautic-openshift
+          app: ${NAME}
       strategy:
         rollingUpdate:
           maxSurge: 25%
@@ -44,53 +44,28 @@ objects:
         metadata:
           creationTimestamp: null
           labels:
-            app: mautic-openshift
-            deploymentconfig: mautic-openshift
+            app: ${NAME}
+            deploymentconfig: ${NAME}
         spec:
           volumes:
           - name: ${NAME}-config
+            secret: 
+              secretName: ${NAME}-php-db-config
+          - name: ${NAME}-cache
             emptyDir: {}
-          initContainers:
-            - image: busybox:latest
-              name: ${NAME}-config-writer
-              volumeMounts:
-                - name: ${NAME}-config
-                  mountPath: /var/www/html/app/config
-              env: 
-                - name: MAUTIC_DB_USER
-                  valueFrom:
-                    secretKeyRef:
-                      key: database-user
-                      name: mautic-db
-                - name: MAUTIC_DB_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      key: database-password
-                      name: mautic-db
-                - name: MAUTIC_DB_NAME
-                  valueFrom:
-                    secretKeyRef:
-                      key: database-name
-                      name: mautic-db
-                - name: MAUTIC_DB_HOST
-                  value: ${MARIA_DB_SERVICE_NAME}
-              command: ["sh", "-c"]
-              args:
-                - | 
-                  CONTENTS="
-                  <?php
-                    \$parameters = array (
-                    'db_driver' => 'pdo_mysql',
-                    'install_source' => 'Docker',
-                    'db_port' => '3306',
-                    'db_host' => '$MAUTIC_DB_HOST',
-                    'db_name' => '$MAUTIC_DB_NAME',
-                    'db_user' => '$MAUTIC_DB_USER',
-                    'db_password' => '$MAUTIC_DB_PASSWORD',
-                    'default_timezone' => 'UTC',
-                  );
-                  "
-                  echo $CONTENTS > /var/www/html/app/config/local.php
+          - name: ${NAME}-apache-conf
+            configMap:
+              name: ${NAME}-apache-config
+          #     items:
+          #       - key: ports.conf
+          #         path: ports.conf
+          # - name: ${NAME}-apache-000-conf
+          #   configMap:
+          #     name: ${NAME}-apache-config
+          #     items:
+          #       - key: 000-default.conf
+          #         path: 000-default.conf
+
           containers:
             - env:
                 - name: MAUTIC_DB_USER
@@ -111,15 +86,26 @@ objects:
                 - name: MAUTIC_DB_HOST
                   value: ${MARIA_DB_SERVICE_NAME}
               image: >-
-                image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift@sha256:cfe408b6d7cedc7012ca106dcaf41ad1c0353b77e4e3118e6073c08765af8245
+                image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift
               imagePullPolicy: Always
-              name: mautic-openshift
+              ports: 
+                - containerPort: 8080
+              name: ${NAME}
               resources: {}
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               volumeMounts:
                 - name: ${NAME}-config
-                  mountPath: /var/www/html/app/config
+                  mountPath: /var/www/html/app/config/local.php
+                  subPath: local.php
+                - name: ${NAME}-apache-conf
+                  mountPath: /etc/apache2/sites-enabled/000-default.conf
+                  subPath: 000-default.conf
+                - name: ${NAME}-apache-conf
+                  mountPath: /etc/apache2/ports.conf
+                  subPath: ports.conf
+                - name: ${NAME}-cache
+                  mountPath: /var/www/html/var/cache/
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -138,11 +124,11 @@ objects:
         openshift.io/generated-by: OpenShiftWebConsole
       generation: 11
       labels:
-        app: mautic-openshift
-        app.kubernetes.io/component: mautic-openshift
-        app.kubernetes.io/instance: mautic-openshift
+        app: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
-      name: mautic-openshift
+      name: ${NAME}
   - apiVersion: build.openshift.io/v1
     kind: BuildConfig
     spec:
@@ -169,11 +155,11 @@ objects:
       triggers:
         - generic:
             secretReference:
-              name: mautic-openshift-generic-webhook-secret
+              name: ${NAME}-generic-webhook-secret
           type: Generic
         - github:
             secretReference:
-              name: mautic-openshift-github-webhook-secret
+              name: ${NAME}-github-webhook-secret
           type: GitHub
         - type: ConfigChange
     metadata:
@@ -182,11 +168,11 @@ objects:
         app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
         openshift.io/generated-by: OpenShiftWebConsole
       labels:
-        app: mautic-openshift
-        app.kubernetes.io/component: mautic-openshift
-        app.kubernetes.io/instance: mautic-openshift
+        app: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
-      name: mautic-openshift
+      name: ${NAME}
   - apiVersion: image.openshift.io/v1
     kind: ImageStream
     spec:
@@ -199,31 +185,82 @@ objects:
         openshift.io/generated-by: OpenShiftWebConsole
       generation: 1
       labels:
-        app: mautic-openshift
-        app.kubernetes.io/component: mautic-openshift
-        app.kubernetes.io/instance: mautic-openshift
+        app: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
-      name: mautic-openshift
+      name: ${NAME}
   - apiVersion: route.openshift.io/v1
     kind: Route
     spec:
-      host: mautic-openshift-pltfrm-tools.apps.pathfinder.aro.devops.gov.bc.ca
+      host: ${NAME}-pltfrm-tools.apps.pathfinder.aro.devops.gov.bc.ca
       port:
         targetPort: 8080-tcp
       to:
         kind: Service
-        name: mautic-openshift
+        name: ${NAME}
         weight: 100
       wildcardPolicy: None
     metadata:
       annotations:
         openshift.io/host.generated: 'true'
       labels:
-        app: mautic-openshift
-        app.kubernetes.io/component: mautic-openshift
-        app.kubernetes.io/instance: mautic-openshift
+        app: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
-      name: mautic-openshift
+      name: ${NAME}
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      annotations:
+        openshift.io/host.generated: 'true'
+      labels:
+        app: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
+        app.kubernetes.io/part-of: mautic-app
+      name: ${NAME}-apache-config
+    data:
+      000-default.conf: |
+        <VirtualHost *:8080>
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
+        </VirtualHost>
+        # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+
+      ports.conf: |
+        # If you just change the port or add more ports here, you will likely also
+        # have to change the VirtualHost statement in
+        # /etc/apache2/sites-enabled/000-default.conf
+        Listen 8080
+        # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+
   - apiVersion: v1
     kind: Service
     spec:
@@ -268,22 +305,22 @@ objects:
                   valueFrom:
                     secretKeyRef:
                       key: database-user
-                      name: mautic-db
+                      name: ${NAME}-db
                 - name: MYSQL_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: database-password
-                      name: mautic-db
+                      name: ${NAME}-db
                 - name: MYSQL_ROOT_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: database-root-password
-                      name: mautic-db
+                      name: ${NAME}-db
                 - name: MYSQL_DATABASE
                   valueFrom:
                     secretKeyRef:
                       key: database-name
-                      name: mautic-db
+                      name: ${NAME}-db
               image: >-
                 image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
               imagePullPolicy: IfNotPresent
@@ -352,6 +389,47 @@ objects:
         template: mariadb-ephemeral-template
         app: ${NAME}
       name: ${MARIA_DB_SERVICE_NAME}
+  - apiVersion: v1
+    kind: Secret
+    stringData:
+      database-name: ${DATABASE_NAME}
+      database-password: ${DATABASE_USER_PASSWORD}
+      database-root-password: ${DATABASE_ROOT_PASSWORD}
+      database-user: ${DATABASE_USER}
+    type: Opaque
+    metadata:
+      annotations:
+        template.openshift.io/expose-database_name: '{.data[''database-name'']}'
+        template.openshift.io/expose-password: '{.data[''database-password'']}'
+        template.openshift.io/expose-root_password: '{.data[''database-root-password'']}'
+        template.openshift.io/expose-username: '{.data[''database-user'']}'
+      labels:
+        component: secret
+        app: ${NAME}
+      name: ${NAME}-db
+  - apiVersion: v1
+    kind: Secret
+    stringData:
+      # needed by php. For some reason we need to write database values to a file :( 
+      # this makes patrick sad, this key/value is to be mounted as a file in /var/www/html/app/config
+      local.php: | 
+        <?php
+          $parameters = array (
+          'db_driver' => 'pdo_mysql',
+          'install_source' => 'Docker',
+          'db_port' => '3306',
+          'db_host' => '${MAUTIC_DB_HOST}',
+          'db_name' => '${MAUTIC_DB_NAME}',
+          'db_user' => '${MAUTIC_DB_USER}',
+          'db_password' => '${MAUTIC_DB_PASSWORD}',
+          'default_timezone' => 'UTC',
+        );
+    type: Opaque
+    metadata:
+      name: ${NAME}-php-db-config
+      labels:
+        component: secret
+        app: ${NAME}
 parameters:
 - name: NAME
   displayName: name
@@ -361,3 +439,23 @@ parameters:
   value: mautic-db
   required: true
   description: the mautic database service name
+- name: DATABASE_USER
+  description: the database root user
+  displayName: Database Root Username
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+- name: DATABASE_NAME
+  description: the database name
+  displayName: Database Name
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+- name: DATABASE_USER_PASSWORD
+  description: The database user password
+  displayName: Database User Password
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+- name: DATABASE_ROOT_PASSWORD
+  description: The database root password
+  displayName: Database Root User Password
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
