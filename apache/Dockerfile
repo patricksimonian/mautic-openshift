@@ -3,31 +3,61 @@ FROM php:7.3-apache
 LABEL vendor="Mautic"
 LABEL maintainer="Luiz Eduardo Oliveira Fonseca <luiz@powertic.com>"
 
-# Install PHP extensions
 RUN apt-get update && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    build-essential  \
+    software-properties-common \
     cron \
     git \
+    htop \
     wget \
+    dos2unix \
+    curl \
+    libcurl4-gnutls-dev \
     sudo \
     libc-client-dev \
-    libicu-dev \
     libkrb5-dev \
     libmcrypt-dev \
     libssl-dev \
+    libxml2-dev \
+    libzip-dev \
+    libjpeg-dev \
+    libmagickwand-dev \
+    libpng-dev \
+    libgif-dev \
+    libtiff-dev \
     libz-dev \
+    libpq-dev \
+    imagemagick \
+    graphicsmagick \
+    libwebp-dev \
+    libjpeg62-turbo-dev \
+    libxpm-dev \
+    libaprutil1-dev \
+    libicu-dev \
+    libfreetype6-dev \
     unzip \
+    nano \
     zip \
+    mariadb-client \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/* \
     && rm /etc/cron.daily/*
 
-RUN docker-php-ext-configure imap --with-imap --with-imap-ssl --with-kerberos \
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
+    docker-php-ext-install imap && \
+    docker-php-ext-enable imap 
+
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/lib --with-png-dir=/usr/lib --with-jpeg-dir=/usr/lib \
+    && docker-php-ext-install  gd \
     && docker-php-ext-configure opcache --enable-opcache \
-    && docker-php-ext-install imap intl mbstring mcrypt mysqli pdo_mysql zip opcache bcmath\
-    && docker-php-ext-enable imap intl mbstring mcrypt mysqli pdo_mysql zip opcache bcmath
+    && docker-php-ext-install intl mbstring mysqli curl pdo_mysql zip opcache bcmath gd \
+    && docker-php-ext-enable intl mbstring mysqli curl pdo_mysql zip opcache bcmath gd
 
 # Install composer
+# Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+
 
 # Define Mautic version and expected SHA1 signature
 ENV MAUTIC_VERSION 3.1.2
