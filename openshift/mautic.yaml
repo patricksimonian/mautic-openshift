@@ -1,0 +1,363 @@
+kind: Template
+apiVersion: v1
+objects:
+  - apiVersion: v1
+    kind: Service
+    spec:
+      ports:
+        - name: 8080-tcp
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app: mautic-openshift
+        deploymentconfig: mautic-openshift
+      sessionAffinity: None
+      type: ClusterIP
+    metadata:
+      annotations:
+        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
+        openshift.io/generated-by: OpenShiftWebConsole
+      labels:
+        app: mautic-openshift
+        app.kubernetes.io/component: mautic-openshift
+        app.kubernetes.io/instance: mautic-openshift
+        app.kubernetes.io/part-of: mautic-app
+      name: mautic-openshift
+
+  - apiVersion: apps/v1
+    kind: Deployment
+    spec:
+      progressDeadlineSeconds: 600
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        matchLabels:
+          app: mautic-openshift
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: mautic-openshift
+            deploymentconfig: mautic-openshift
+        spec:
+          volumes:
+          - name: ${NAME}-config
+            emptyDir: {}
+          initContainers:
+            - image: busybox:latest
+              name: ${NAME}-config-writer
+              volumeMounts:
+                - name: ${NAME}-config
+                  mountPath: /var/www/html/app/config
+              env: 
+                - name: MAUTIC_DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-user
+                      name: mautic-db
+                - name: MAUTIC_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-password
+                      name: mautic-db
+                - name: MAUTIC_DB_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-name
+                      name: mautic-db
+                - name: MAUTIC_DB_HOST
+                  value: ${MARIA_DB_SERVICE_NAME}
+              command: ["sh", "-c"]
+              args:
+                - | 
+                  CONTENTS="
+                  <?php
+                    \$parameters = array (
+                    'db_driver' => 'pdo_mysql',
+                    'install_source' => 'Docker',
+                    'db_port' => '3306',
+                    'db_host' => '$MAUTIC_DB_HOST',
+                    'db_name' => '$MAUTIC_DB_NAME',
+                    'db_user' => '$MAUTIC_DB_USER',
+                    'db_password' => '$MAUTIC_DB_PASSWORD',
+                    'default_timezone' => 'UTC',
+                  );
+                  "
+                  echo $CONTENTS > /var/www/html/app/config/local.php
+          containers:
+            - env:
+                - name: MAUTIC_DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-user
+                      name: mautic-db
+                - name: MAUTIC_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-password
+                      name: mautic-db
+                - name: MAUTIC_DB_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-name
+                      name: mautic-db
+                - name: MAUTIC_DB_HOST
+                  value: ${MARIA_DB_SERVICE_NAME}
+              image: >-
+                image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift@sha256:cfe408b6d7cedc7012ca106dcaf41ad1c0353b77e4e3118e6073c08765af8245
+              imagePullPolicy: Always
+              name: mautic-openshift
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - name: ${NAME}-config
+                  mountPath: /var/www/html/app/config
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+    metadata:
+      annotations:
+        alpha.image.policy.openshift.io/resolve-names: '*'
+        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
+        deployment.kubernetes.io/revision: '11'
+        image.openshift.io/triggers: >-
+          [{"from":{"kind":"ImageStreamTag","name":"mautic-openshift:latest","namespace":"pltfrm-tools"},"fieldPath":"spec.template.spec.containers[?(@.name==\"mautic-openshift\")].image","pause":"false"}]
+        kubectl.kubernetes.io/last-applied-configuration: >
+          {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"alpha.image.policy.openshift.io/resolve-names":"*","app.openshift.io/vcs-ref":"main","app.openshift.io/vcs-uri":"https://github.com/patricksimonian/mautic-openshift","deployment.kubernetes.io/revision":"2","image.openshift.io/triggers":"[{\"from\":{\"kind\":\"ImageStreamTag\",\"name\":\"mautic-openshift:latest\",\"namespace\":\"pltfrm-tools\"},\"fieldPath\":\"spec.template.spec.containers[?(@.name==\\\"mautic-openshift\\\")].image\",\"pause\":\"false\"}]","openshift.io/generated-by":"OpenShiftWebConsole"},"generation":4,"labels":{"app":"mautic-openshift","app.kubernetes.io/component":"mautic-openshift","app.kubernetes.io/instance":"mautic-openshift","app.kubernetes.io/part-of":"mautic-app"},"managedFields":[{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:spec":{"f:template":{"f:spec":{"f:containers":{"k:{\"name\":\"mautic-openshift\"}":{"f:image":{}}}}}}},"manager":"openshift-controller-manager","operation":"Update","time":"2020-11-16T18:39:27Z"},{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{".":{},"f:alpha.image.policy.openshift.io/resolve-names":{},"f:app.openshift.io/vcs-ref":{},"f:app.openshift.io/vcs-uri":{},"f:image.openshift.io/triggers":{},"f:openshift.io/generated-by":{}},"f:labels":{".":{},"f:app":{},"f:app.kubernetes.io/component":{},"f:app.kubernetes.io/instance":{},"f:app.kubernetes.io/part-of":{}}},"f:spec":{"f:progressDeadlineSeconds":{},"f:replicas":{},"f:revisionHistoryLimit":{},"f:selector":{"f:matchLabels":{".":{},"f:app":{}}},"f:strategy":{"f:rollingUpdate":{".":{},"f:maxSurge":{},"f:maxUnavailable":{}},"f:type":{}},"f:template":{"f:metadata":{"f:labels":{".":{},"f:app":{},"f:deploymentconfig":{}}},"f:spec":{"f:containers":{"k:{\"name\":\"mautic-openshift\"}":{".":{},"f:imagePullPolicy":{},"f:name":{},"f:resources":{},"f:terminationMessagePath":{},"f:terminationMessagePolicy":{}}},"f:dnsPolicy":{},"f:restartPolicy":{},"f:schedulerName":{},"f:securityContext":{},"f:terminationGracePeriodSeconds":{}}}}},"manager":"Mozilla","operation":"Update","time":"2020-11-16T19:18:08Z"},{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{"f:deployment.kubernetes.io/revision":{}}},"f:status":{"f:conditions":{".":{},"k:{\"type\":\"Available\"}":{".":{},"f:lastTransitionTime":{},"f:lastUpdateTime":{},"f:message":{},"f:reason":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Progressing\"}":{".":{},"f:lastTransitionTime":{},"f:lastUpdateTime":{},"f:message":{},"f:reason":{},"f:status":{},"f:type":{}}},"f:observedGeneration":{},"f:replicas":{},"f:unavailableReplicas":{},"f:updatedReplicas":{}}},"manager":"kube-controller-manager","operation":"Update","time":"2020-11-16T19:18:08Z"}],"name":"mautic-openshift","namespace":"pltfrm-tools"},"spec":{"progressDeadlineSeconds":600,"replicas":1,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app":"mautic-openshift"}},"strategy":{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"mautic-openshift","deploymentconfig":"mautic-openshift"}},"spec":{"containers":[{"env":[{"name":"MAUTIC_DB_HOST","value":"mariadb"},{"name":"MAUTIC_DB_USER","value":"mautic"},{"name":"MAUTIC_DB_NAME","value":"mautic"},{"name":"MAUTIC_DB_PASSWORD","value":"mautic"}],"image":"image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift@sha256:be2cd008c24742f25a968af90d5970313243332d9cdd164e1dc8944f6d06af4b","imagePullPolicy":"Always","name":"mautic-openshift","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File"}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30}}}}
+        openshift.io/generated-by: OpenShiftWebConsole
+      generation: 11
+      labels:
+        app: mautic-openshift
+        app.kubernetes.io/component: mautic-openshift
+        app.kubernetes.io/instance: mautic-openshift
+        app.kubernetes.io/part-of: mautic-app
+      name: mautic-openshift
+  - apiVersion: build.openshift.io/v1
+    kind: BuildConfig
+    spec:
+      failedBuildsHistoryLimit: 5
+      nodeSelector: null
+      output:
+        to:
+          kind: ImageStreamTag
+          name: 'mautic-openshift:latest'
+      postCommit: {}
+      resources: {}
+      runPolicy: Serial
+      source:
+        contextDir: apache
+        git:
+          ref: mautic3
+          uri: 'https://github.com/patricksimonian/mautic-openshift'
+        type: Git
+      strategy:
+        dockerStrategy:
+          dockerfilePath: Dockerfile
+        type: Docker
+      successfulBuildsHistoryLimit: 5
+      triggers:
+        - generic:
+            secretReference:
+              name: mautic-openshift-generic-webhook-secret
+          type: Generic
+        - github:
+            secretReference:
+              name: mautic-openshift-github-webhook-secret
+          type: GitHub
+        - type: ConfigChange
+    metadata:
+      annotations:
+        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
+        openshift.io/generated-by: OpenShiftWebConsole
+      labels:
+        app: mautic-openshift
+        app.kubernetes.io/component: mautic-openshift
+        app.kubernetes.io/instance: mautic-openshift
+        app.kubernetes.io/part-of: mautic-app
+      name: mautic-openshift
+  - apiVersion: image.openshift.io/v1
+    kind: ImageStream
+    spec:
+      lookupPolicy:
+        local: false
+    metadata:
+      annotations:
+        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
+        openshift.io/generated-by: OpenShiftWebConsole
+      generation: 1
+      labels:
+        app: mautic-openshift
+        app.kubernetes.io/component: mautic-openshift
+        app.kubernetes.io/instance: mautic-openshift
+        app.kubernetes.io/part-of: mautic-app
+      name: mautic-openshift
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    spec:
+      host: mautic-openshift-pltfrm-tools.apps.pathfinder.aro.devops.gov.bc.ca
+      port:
+        targetPort: 8080-tcp
+      to:
+        kind: Service
+        name: mautic-openshift
+        weight: 100
+      wildcardPolicy: None
+    metadata:
+      annotations:
+        openshift.io/host.generated: 'true'
+      labels:
+        app: mautic-openshift
+        app.kubernetes.io/component: mautic-openshift
+        app.kubernetes.io/instance: mautic-openshift
+        app.kubernetes.io/part-of: mautic-app
+      name: mautic-openshift
+  - apiVersion: v1
+    kind: Service
+    spec:
+      ports:
+        - name: ${MARIA_DB_SERVICE_NAME}
+          port: 3306
+          protocol: TCP
+          targetPort: 3306
+      selector:
+        name: ${MARIA_DB_SERVICE_NAME}
+      sessionAffinity: None
+      type: ClusterIP
+    metadata:
+      annotations:
+        template.openshift.io/expose-uri: 'mysql://{.spec.clusterIP}:{.spec.ports[?(.name=="mariadb")].port}'
+      labels:
+        app: ${NAME}
+        group: ${MARIA_DB_SERVICE_NAME}
+      name: ${MARIA_DB_SERVICE_NAME}
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        name: ${MARIA_DB_SERVICE_NAME}
+      strategy:
+        activeDeadlineSeconds: 21600
+        recreateParams:
+          timeoutSeconds: 600
+        resources: {}
+        type: Recreate
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            name: ${MARIA_DB_SERVICE_NAME}
+        spec:
+          containers:
+            - env:
+                - name: MYSQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-user
+                      name: mautic-db
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-password
+                      name: mautic-db
+                - name: MYSQL_ROOT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-root-password
+                      name: mautic-db
+                - name: MYSQL_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      key: database-name
+                      name: mautic-db
+              image: >-
+                image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                successThreshold: 1
+                tcpSocket:
+                  port: 3306
+                timeoutSeconds: 1
+              name: mariadb
+              ports:
+                - containerPort: 3306
+                  protocol: TCP
+              readinessProbe:
+                exec:
+                  command:
+                    - /bin/sh
+                    - '-i'
+                    - '-c'
+                    - >-
+                      MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u
+                      $MYSQL_USER -D $MYSQL_DATABASE -e 'SELECT 1'
+                failureThreshold: 3
+                initialDelaySeconds: 5
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              resources:
+                limits:
+                  memory: 512Mi
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /var/lib/mysql/data
+                  name: mariadb-data
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+          volumes:
+            - emptyDir: {}
+              name: mariadb-data
+      test: false
+      triggers:
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - mariadb
+            from:
+              kind: ImageStreamTag
+              name: 'mariadb:10.2'
+              namespace: openshift
+            lastTriggeredImage: >-
+              image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
+          type: ImageChange
+        - type: ConfigChange
+    metadata:
+      annotations:
+        app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"${NAME}"}]'
+        template.alpha.openshift.io/wait-for-ready: 'true'
+      generation: 2
+      labels:
+        template: mariadb-ephemeral-template
+        app: ${NAME}
+      name: ${MARIA_DB_SERVICE_NAME}
+parameters:
+- name: NAME
+  displayName: name
+  description: the value used to group components by a common name
+  value: mautic
+- name: MARIA_DB_SERVICE_NAME
+  value: mautic-db
+  required: true
+  description: the mautic database service name

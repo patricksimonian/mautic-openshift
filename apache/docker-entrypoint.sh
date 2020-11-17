@@ -104,11 +104,6 @@ php /makedb.php "$MAUTIC_DB_HOST" "$MAUTIC_DB_USER" "$MAUTIC_DB_PASSWORD" "$MAUT
 echo >&2 "========================================================================"
 echo >&2
 echo >&2 "This server is now configured to run Mautic!"
-echo >&2 "The following information will be prefilled into the installer (keep password field empty):"
-echo >&2 "Host Name: $MAUTIC_DB_HOST"
-echo >&2 "Database Name: $MAUTIC_DB_NAME"
-echo >&2 "Database Username: $MAUTIC_DB_USER"
-echo >&2 "Database Password: $MAUTIC_DB_PASSWORD"
 
 
 # Write the database connection to the config so the installer prefills it
