@@ -10,7 +10,6 @@ objects:
           protocol: TCP
           targetPort: 8080
       selector:
-        app: ${NAME}
         deploymentconfig: ${NAME}
       sessionAffinity: None
       type: ClusterIP
@@ -26,20 +25,16 @@ objects:
         app.kubernetes.io/part-of: mautic-app
       name: ${NAME}
 
-  - apiVersion: apps/v1
-    kind: Deployment
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
     spec:
       progressDeadlineSeconds: 600
       replicas: 1
       revisionHistoryLimit: 10
       selector:
-        matchLabels:
-          app: ${NAME}
+        deploymentconfig: ${NAME}
       strategy:
-        rollingUpdate:
-          maxSurge: 25%
-          maxUnavailable: 25%
-        type: RollingUpdate
+        type: Rolling
       template:
         metadata:
           creationTimestamp: null
@@ -53,19 +48,11 @@ objects:
               secretName: ${NAME}-php-db-config
           - name: ${NAME}-cache
             emptyDir: {}
+          - name: ${NAME}-logs
+            emptyDir: {}
           - name: ${NAME}-apache-conf
             configMap:
               name: ${NAME}-apache-config
-          #     items:
-          #       - key: ports.conf
-          #         path: ports.conf
-          # - name: ${NAME}-apache-000-conf
-          #   configMap:
-          #     name: ${NAME}-apache-config
-          #     items:
-          #       - key: 000-default.conf
-          #         path: 000-default.conf
-
           containers:
             - env:
                 - name: MAUTIC_DB_USER
@@ -86,12 +73,13 @@ objects:
                 - name: MAUTIC_DB_HOST
                   value: ${MARIA_DB_SERVICE_NAME}
               image: >-
-                image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift
+                image-registry.openshift-image-registry.svc:5000/pltfrm-tools/${NAME}
               imagePullPolicy: Always
-              ports: 
-                - containerPort: 8080
               name: ${NAME}
-              resources: {}
+              resources:
+                cpu:
+                  requests: 1000m
+                  limits: 1500m
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               volumeMounts:
@@ -106,6 +94,8 @@ objects:
                   subPath: ports.conf
                 - name: ${NAME}-cache
                   mountPath: /var/www/html/var/cache/
+                - name: ${NAME}-logs
+                  mountPath: /var/www/html/var/logs/
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -137,7 +127,7 @@ objects:
       output:
         to:
           kind: ImageStreamTag
-          name: 'mautic-openshift:latest'
+          name: '${NAME}:latest'
       postCommit: {}
       resources: {}
       runPolicy: Serial
@@ -223,7 +213,7 @@ objects:
       name: ${NAME}-apache-config
     data:
       000-default.conf: |
-        <VirtualHost *:8080>
+        <VirtualHost *:80>
         # The ServerName directive sets the request scheme, hostname and port that
         # the server uses to identify itself. This is used when creating
         # redirection URLs. In the context of virtual hosts, the ServerName
