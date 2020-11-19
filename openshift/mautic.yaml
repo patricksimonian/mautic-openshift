@@ -20,6 +20,7 @@ objects:
         openshift.io/generated-by: OpenShiftWebConsole
       labels:
         app: ${NAME}
+        deploymentConfig: ${NAME}
         app.kubernetes.io/component: ${NAME}
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
@@ -113,6 +114,7 @@ objects:
       generation: 11
       labels:
         app: ${NAME}
+        deploymentConfig: ${NAME}
         app.kubernetes.io/component: ${NAME}
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
@@ -156,7 +158,9 @@ objects:
         app.openshift.io/vcs-uri: 'https://github.com/patricksimonian/mautic-openshift'
         openshift.io/generated-by: OpenShiftWebConsole
       labels:
+        app: ${NAME}
         group: ${NAME}
+        buildConfig: ${NAME}
         app.kubernetes.io/component: ${NAME}
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
@@ -174,6 +178,7 @@ objects:
       generation: 1
       labels:
         app: ${NAME}
+        buildConfig: ${NAME}
         app.kubernetes.io/component: ${NAME}
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
@@ -194,6 +199,7 @@ objects:
         openshift.io/host.generated: 'true'
       labels:
         app: ${NAME}
+        deploymentConfig: ${NAME}
         app.kubernetes.io/component: ${NAME}
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
@@ -205,6 +211,7 @@ objects:
         openshift.io/host.generated: 'true'
       labels:
         app: ${NAME}
+        deploymentConfig: ${NAME}
         app.kubernetes.io/component: ${NAME}
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: mautic-app
@@ -266,7 +273,8 @@ objects:
         template.openshift.io/expose-uri: 'mysql://{.spec.clusterIP}:{.spec.ports[?(.name=="mariadb")].port}'
       labels:
         app: ${NAME}
-        group: ${MARIA_DB_SERVICE_NAME}
+        deploymentConfig: ${MARIA_DB_SERVICE_NAME}
+        group: ${NAME}
       name: ${MARIA_DB_SERVICE_NAME}
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
@@ -374,7 +382,9 @@ objects:
         template.alpha.openshift.io/wait-for-ready: 'true'
       generation: 2
       labels:
+        deploymentConfig: ${MARIA_DB_SERVICE_NAME}
         template: mariadb-ephemeral-template
+        group: ${NAME}
         app: ${NAME}
       name: ${MARIA_DB_SERVICE_NAME}
   
