@@ -6,9 +6,9 @@
     GIT_REF: mautic3
     GIT_REPO: https://github.com/patricksimonian/mautic-openshift
   tasks:
-  # - shell: >
-  #     oc delete all,pvc,secret -l app={{ APP_LABEL }} -n pltfrm-tools
-  #   name: delete objects
+  - shell: >
+      oc delete all,pvc,secret -l app={{ APP_LABEL }} -n pltfrm-tools
+    name: delete objects
   - shell: >
       oc process -f ./openshift/mautic.yaml -p NAME={{ APP_LABEL }} -p GIT_REF={{ GIT_REF }} -p GIT_REPO={{ GIT_REPO }} |
       oc apply -f - -n pltfrm-tools

@@ -94,7 +94,6 @@ objects:
                   mountPath: /var/www/html/var/logs/
                 - name: ${NAME}-php-config
                   mountPath: /var/www/html/app/config/
-                  subPath: local.php
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
