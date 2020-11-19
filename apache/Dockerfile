@@ -83,7 +83,7 @@ RUN chmod 644 /etc/cron.d/mautic
 
 # Enable Apache Rewrite Module
 RUN a2enmod rewrite
-
+VOLUME [ "./app/config" ]
 # Apply necessary permissions
 RUN ["chmod", "+x", "/entrypoint.sh"]
 ENTRYPOINT ["/entrypoint.sh"]

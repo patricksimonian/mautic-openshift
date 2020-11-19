@@ -107,7 +107,9 @@ echo >&2 "This server is now configured to run Mautic!"
 
 
 # Write the database connection to the config so the installer prefills it
-ls -l .
+cp -R /tmp/config app
+rm -rf /tmp/config
+
 if ! [ -e app/config/local.php ]; then
         php /makeconfig.php
 

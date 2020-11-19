@@ -43,12 +43,11 @@ objects:
             deploymentconfig: ${NAME}
         spec:
           volumes:
-          - name: ${NAME}-config
-            secret: 
-              secretName: ${NAME}-php-db-config
           - name: ${NAME}-cache
             emptyDir: {}
           - name: ${NAME}-logs
+            emptyDir: {}
+          - name: ${NAME}-php-config
             emptyDir: {}
           - name: ${NAME}-apache-conf
             configMap:
@@ -83,9 +82,6 @@ objects:
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               volumeMounts:
-                - name: ${NAME}-config
-                  mountPath: /var/www/html/app/config/local.php
-                  subPath: local.php
                 - name: ${NAME}-apache-conf
                   mountPath: /etc/apache2/sites-enabled/000-default.conf
                   subPath: 000-default.conf
@@ -96,6 +92,9 @@ objects:
                   mountPath: /var/www/html/var/cache/
                 - name: ${NAME}-logs
                   mountPath: /var/www/html/var/logs/
+                - name: ${NAME}-php-config
+                  mountPath: /var/www/html/app/config/
+                  subPath: local.php
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -134,8 +133,8 @@ objects:
       source:
         contextDir: apache
         git:
-          ref: mautic3
-          uri: 'https://github.com/patricksimonian/mautic-openshift'
+          ref: ${GIT_REF}
+          uri: ${GIT_REPO}
         type: Git
       strategy:
         dockerStrategy:
@@ -397,34 +396,19 @@ objects:
         component: secret
         app: ${NAME}
       name: ${NAME}-db
-  - apiVersion: v1
-    kind: Secret
-    stringData:
-      # needed by php. For some reason we need to write database values to a file :( 
-      # this makes patrick sad, this key/value is to be mounted as a file in /var/www/html/app/config
-      local.php: | 
-        <?php
-          $parameters = array (
-          'db_driver' => 'pdo_mysql',
-          'install_source' => 'Docker',
-          'db_port' => '3306',
-          'db_host' => '${MAUTIC_DB_HOST}',
-          'db_name' => '${MAUTIC_DB_NAME}',
-          'db_user' => '${MAUTIC_DB_USER}',
-          'db_password' => '${MAUTIC_DB_PASSWORD}',
-          'default_timezone' => 'UTC',
-        );
-    type: Opaque
-    metadata:
-      name: ${NAME}-php-db-config
-      labels:
-        component: secret
-        app: ${NAME}
 parameters:
 - name: NAME
   displayName: name
   description: the value used to group components by a common name
   value: mautic
+- name: GIT_REF
+  displayName: Git Branch
+  description: the git branch to build from
+  value: main 
+- name: GIT_REPO
+  displayName: Git repository
+  description: the git repo to build from
+  value: https://github.com/patricksimonian/mautic-openshift
 - name: MARIA_DB_SERVICE_NAME
   value: mautic-db
   required: true
