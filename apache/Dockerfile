@@ -73,6 +73,7 @@ RUN curl -o mautic.zip -SL https://github.com/mautic/mautic/releases/download/${
     && unzip mautic.zip -d /var/www/html \
     && rm mautic.zip
 
+WORKDIR /var/www/html
 # Copy init scripts and custom .htaccess
 COPY docker-entrypoint.sh /entrypoint.sh
 COPY makeconfig.php /makeconfig.php
