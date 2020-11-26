@@ -72,6 +72,8 @@ objects:
                       name: ${NAME}-db
                 - name: MAUTIC_DB_HOST
                   value: ${NAME}-db
+                - name: MAUTIC_DB_PORT
+                  value: 3306
               image: >-
                 image-registry.openshift-image-registry.svc:5000/pltfrm-tools/${NAME}
               imagePullPolicy: Always
