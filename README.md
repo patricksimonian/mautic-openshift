@@ -14,4 +14,5 @@ To Run:
 
     ```oc rollout latest dc/mautic-db -n <namespace> && oc rollout latest dc/mautic -n <namespace>```
     
+4. Go to the Mautic deployment and start the Mautic Installation. Change the ```Database Port``` to 3306
 
