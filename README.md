@@ -25,5 +25,3 @@ To Run:
 
     Example: ```oc rollout latest dc/mautic-db -n pltfrm-tools && oc rollout latest dc/mautic -n pltfrm-tools```
     
-4. Go to the Mautic deployment and start the Mautic Installation. Change the ```Database Port``` to 3306
-
