@@ -59,19 +59,19 @@ objects:
                   valueFrom:
                     secretKeyRef:
                       key: database-user
-                      name: ${MARIA_DB_SERVICE_NAME}
+                      name: ${NAME}-db
                 - name: MAUTIC_DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: database-password
-                      name: ${MARIA_DB_SERVICE_NAME}
+                      name: ${NAME}-db
                 - name: MAUTIC_DB_NAME
                   valueFrom:
                     secretKeyRef:
                       key: database-name
-                      name: ${MARIA_DB_SERVICE_NAME}
+                      name: ${NAME}-db
                 - name: MAUTIC_DB_HOST
-                  value: ${MARIA_DB_SERVICE_NAME}
+                  value: ${NAME}-db
               image: >-
                 image-registry.openshift-image-registry.svc:5000/pltfrm-tools/${NAME}
               imagePullPolicy: Always
@@ -260,12 +260,12 @@ objects:
     kind: Service
     spec:
       ports:
-        - name: ${MARIA_DB_SERVICE_NAME}
+        - name: ${NAME}-db
           port: 3306
           protocol: TCP
           targetPort: 3306
       selector:
-        name: ${MARIA_DB_SERVICE_NAME}
+        name: ${NAME}-db
       sessionAffinity: None
       type: ClusterIP
     metadata:
@@ -273,16 +273,16 @@ objects:
         template.openshift.io/expose-uri: 'mysql://{.spec.clusterIP}:{.spec.ports[?(.name=="mariadb")].port}'
       labels:
         app: ${NAME}
-        deploymentConfig: ${MARIA_DB_SERVICE_NAME}
+        deploymentConfig: ${NAME}-db
         group: ${NAME}
-      name: ${MARIA_DB_SERVICE_NAME}
+      name: ${NAME}-db
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
     spec:
       replicas: 1
       revisionHistoryLimit: 10
       selector:
-        name: ${MARIA_DB_SERVICE_NAME}
+        name: ${NAME}-db
       strategy:
         activeDeadlineSeconds: 21600
         recreateParams:
@@ -293,7 +293,7 @@ objects:
         metadata:
           creationTimestamp: null
           labels:
-            name: ${MARIA_DB_SERVICE_NAME}
+            name: ${NAME}-db
         spec:
           containers:
             - env:
@@ -382,11 +382,11 @@ objects:
         template.alpha.openshift.io/wait-for-ready: 'true'
       generation: 2
       labels:
-        deploymentConfig: ${MARIA_DB_SERVICE_NAME}
+        deploymentConfig: ${NAME}-db
         template: mariadb-ephemeral-template
         group: ${NAME}
         app: ${NAME}
-      name: ${MARIA_DB_SERVICE_NAME}
+      name: ${NAME}-db
   
 parameters:
 - name: NAME
@@ -401,7 +401,3 @@ parameters:
   displayName: Git repository
   description: the git repo to build from
   value: https://github.com/patricksimonian/mautic-openshift
-- name: MARIA_DB_SERVICE_NAME
-  value: mautic-db
-  required: true
-  description: the mautic database service name
