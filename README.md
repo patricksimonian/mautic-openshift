@@ -42,7 +42,7 @@ To Run:
 
 3. Rollout the database and app
 
-    ```oc rollout latest dc/<database-name> -n <namespace> && oc rollout latest dc/<app-name> -n <namespace>```
+    ```oc rollout latest dc/<app-name>-db -n <namespace> && oc rollout latest dc/<app-name> -n <namespace>```
 
     Example: ```oc rollout latest dc/mautic-db -n pltfrm-tools && oc rollout latest dc/mautic -n pltfrm-tools```
     
