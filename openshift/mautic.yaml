@@ -50,6 +50,8 @@ objects:
             emptyDir: {}
           - name: ${NAME}-php-config
             emptyDir: {}
+          - name: ${NAME}-cache-unsubscribe
+            emptyDir: {}  
           - name: ${NAME}-apache-conf
             configMap:
               name: ${NAME}-apache-config
@@ -97,6 +99,8 @@ objects:
                   mountPath: /var/www/html/var/logs/
                 - name: ${NAME}-php-config
                   mountPath: /var/www/html/app/config/
+                - name: ${NAME}-cache-unsubscribe
+                  mountPath: /var/www/html/app/../var/tmp/twig/
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
