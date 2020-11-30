@@ -1,4 +1,4 @@
-## Mautic Openshift
+## Setting up Mautic on Openshift
 
 To Run:
 
@@ -25,3 +25,11 @@ To Run:
 
     - Example: ```oc rollout latest dc/mautic-db -n pltfrm-tools && oc rollout latest dc/mautic -n pltfrm-tools```
     
+## Setting up Mautic
+
+1. Go to the Mautic Deployment route. This will lead you to the Mautic Installation - Environment Check page. 
+The installer may suggest some recommendations for the configuration. Carefully review these recommendations and go to the next step.
+
+2. On the Mautic Installation - Database Setup page, the required input should be pre-filled for you. Go to the next step.
+
+3. On the Mautic Installation - Administrative User page, create the admin user as required.
