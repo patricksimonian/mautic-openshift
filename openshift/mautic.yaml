@@ -2,6 +2,18 @@ kind: Template
 apiVersion: v1
 objects:
   - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: ${NAME}-php-config
+    spec:
+      accessModes: 
+      - ReadWriteMany
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: 200Mi
+      storageClassName: azurefile
+  - apiVersion: v1
     kind: Service
     spec:
       ports:
@@ -49,9 +61,10 @@ objects:
           - name: ${NAME}-logs
             emptyDir: {}
           - name: ${NAME}-php-config
-            emptyDir: {}
+            persistentVolumeClaim:
+              claimName: ${NAME}-php-config
           - name: ${NAME}-cache-unsubscribe
-            emptyDir: {}  
+            emptyDir: {}
           - name: ${NAME}-apache-conf
             configMap:
               name: ${NAME}-apache-config
@@ -389,7 +402,7 @@ objects:
       generation: 2
       labels:
         deploymentConfig: ${NAME}-db
-        template: mariadb-ephemeral-template
+        template: mariadb-persistent-template
         group: ${NAME}
         app: ${NAME}
       name: ${NAME}-db
