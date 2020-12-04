@@ -30,6 +30,31 @@ To Run:
 1. Go to the Mautic Deployment route. This will lead you to the Mautic Installation - Environment Check page. 
 The installer may suggest some recommendations for the configuration. Carefully review these recommendations and go to the next step.
 
-2. On the Mautic Installation - Database Setup page, the required input should be pre-filled for you. Go to the next step.
+2. On the Mautic Installation - Database Setup page, the required input should be pre-filled for you. Go to the next page.
 
 3. On the Mautic Installation - Administrative User page, create the admin user as required.
+
+4. On the Mautic Installation - Email Configuration page, select "Other SMTP Server" as the Mailer Transport.
+To use the government server, use the following values:
+- Server: apps.smtp.gov.bc.ca
+- Port: 25
+- Encryption: None
+- Authentication mode: Login
+- Username: firstname.lastname
+- Password: Login Password
+
+To use Gmail, use the following values:
+- Server: smtp.gmail.com
+- Port: 587
+- Encryption: TLS
+- Authentication mode: Login
+- Username: Gmail Username
+- Password: Gmail Password
+
+Additionally, you may need to configure your security settings in Gmail to turn on "Less secure app access" at https://myaccount.google.com/security as well as turn on "Display Unlock Captcha" at https://accounts.google.com/b/0/DisplayUnlockCaptcha.
+
+5. To allow emails to be sent out to contacts, you must change the Frequency Rule within Mautic.
+    On the top right of the page, you will see a cog for the settings. Go to Configuration -> Email Settings.
+    Scrolling down, you will see the "Default Frequency Rule". This number will be the maximum number of emails that can be sent to a user in the given time period. Setting this number to a reasonable value will help prevent unintentional email spamming.
+
+
