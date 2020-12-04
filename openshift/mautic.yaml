@@ -7,12 +7,24 @@ objects:
       name: ${NAME}-php-config
     spec:
       accessModes: 
-      - ReadWriteMany
+      - ReadWriteOnce
       volumeMode: Filesystem
       resources:
         requests:
-          storage: 200Mi
-      storageClassName: azurefile
+          storage: 1Gi
+      storageClassName: netapp-file-standard
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: ${NAME}-mariadb-data
+    spec:
+      accessModes: 
+      - ReadWriteOnce
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: netapp-file-standard
   - apiVersion: v1
     kind: Service
     spec:
@@ -90,7 +102,7 @@ objects:
                 - name: MAUTIC_DB_PORT
                   value: "3306"
               image: >-
-                image-registry.openshift-image-registry.svc:5000/pltfrm-tools/${NAME}
+                image-registry.openshift-image-registry.svc:5000/de0974-tools/${NAME}
               imagePullPolicy: Always
               name: ${NAME}
               resources:
@@ -126,9 +138,9 @@ objects:
         app.openshift.io/vcs-uri: ${GIT_REPO}
         deployment.kubernetes.io/revision: '11'
         image.openshift.io/triggers: >-
-          [{"from":{"kind":"ImageStreamTag","name":"mautic-openshift:latest","namespace":"pltfrm-tools"},"fieldPath":"spec.template.spec.containers[?(@.name==\"mautic-openshift\")].image","pause":"false"}]
+          [{"from":{"kind":"ImageStreamTag","name":"mautic-openshift:latest","namespace":"de0974-tools"},"fieldPath":"spec.template.spec.containers[?(@.name==\"mautic-openshift\")].image","pause":"false"}]
         kubectl.kubernetes.io/last-applied-configuration: >
-          {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"alpha.image.policy.openshift.io/resolve-names":"*","app.openshift.io/vcs-ref":"main","app.openshift.io/vcs-uri":${GIT_REPO},"deployment.kubernetes.io/revision":"2","image.openshift.io/triggers":"[{\"from\":{\"kind\":\"ImageStreamTag\",\"name\":\"mautic-openshift:latest\",\"namespace\":\"pltfrm-tools\"},\"fieldPath\":\"spec.template.spec.containers[?(@.name==\\\"mautic-openshift\\\")].image\",\"pause\":\"false\"}]","openshift.io/generated-by":"OpenShiftWebConsole"},"generation":4,"labels":{"app":"mautic-openshift","app.kubernetes.io/component":"mautic-openshift","app.kubernetes.io/instance":"mautic-openshift","app.kubernetes.io/part-of":"mautic-app"},"managedFields":[{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:spec":{"f:template":{"f:spec":{"f:containers":{"k:{\"name\":\"mautic-openshift\"}":{"f:image":{}}}}}}},"manager":"openshift-controller-manager","operation":"Update","time":"2020-11-16T18:39:27Z"},{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{".":{},"f:alpha.image.policy.openshift.io/resolve-names":{},"f:app.openshift.io/vcs-ref":{},"f:app.openshift.io/vcs-uri":{},"f:image.openshift.io/triggers":{},"f:openshift.io/generated-by":{}},"f:labels":{".":{},"f:app":{},"f:app.kubernetes.io/component":{},"f:app.kubernetes.io/instance":{},"f:app.kubernetes.io/part-of":{}}},"f:spec":{"f:progressDeadlineSeconds":{},"f:replicas":{},"f:revisionHistoryLimit":{},"f:selector":{"f:matchLabels":{".":{},"f:app":{}}},"f:strategy":{"f:rollingUpdate":{".":{},"f:maxSurge":{},"f:maxUnavailable":{}},"f:type":{}},"f:template":{"f:metadata":{"f:labels":{".":{},"f:app":{},"f:deploymentconfig":{}}},"f:spec":{"f:containers":{"k:{\"name\":\"mautic-openshift\"}":{".":{},"f:imagePullPolicy":{},"f:name":{},"f:resources":{},"f:terminationMessagePath":{},"f:terminationMessagePolicy":{}}},"f:dnsPolicy":{},"f:restartPolicy":{},"f:schedulerName":{},"f:securityContext":{},"f:terminationGracePeriodSeconds":{}}}}},"manager":"Mozilla","operation":"Update","time":"2020-11-16T19:18:08Z"},{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{"f:deployment.kubernetes.io/revision":{}}},"f:status":{"f:conditions":{".":{},"k:{\"type\":\"Available\"}":{".":{},"f:lastTransitionTime":{},"f:lastUpdateTime":{},"f:message":{},"f:reason":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Progressing\"}":{".":{},"f:lastTransitionTime":{},"f:lastUpdateTime":{},"f:message":{},"f:reason":{},"f:status":{},"f:type":{}}},"f:observedGeneration":{},"f:replicas":{},"f:unavailableReplicas":{},"f:updatedReplicas":{}}},"manager":"kube-controller-manager","operation":"Update","time":"2020-11-16T19:18:08Z"}],"name":"mautic-openshift","namespace":"pltfrm-tools"},"spec":{"progressDeadlineSeconds":600,"replicas":1,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app":"mautic-openshift"}},"strategy":{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"mautic-openshift","deploymentconfig":"mautic-openshift"}},"spec":{"containers":[{"env":[{"name":"MAUTIC_DB_HOST","value":"mariadb"},{"name":"MAUTIC_DB_USER","value":"mautic"},{"name":"MAUTIC_DB_NAME","value":"mautic"},{"name":"MAUTIC_DB_PASSWORD","value":"mautic"}],"image":"image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift@sha256:be2cd008c24742f25a968af90d5970313243332d9cdd164e1dc8944f6d06af4b","imagePullPolicy":"Always","name":"mautic-openshift","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File"}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30}}}}
+          {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"alpha.image.policy.openshift.io/resolve-names":"*","app.openshift.io/vcs-ref":"main","app.openshift.io/vcs-uri":${GIT_REPO},"deployment.kubernetes.io/revision":"2","image.openshift.io/triggers":"[{\"from\":{\"kind\":\"ImageStreamTag\",\"name\":\"mautic-openshift:latest\",\"namespace\":\"de0974-tools\"},\"fieldPath\":\"spec.template.spec.containers[?(@.name==\\\"mautic-openshift\\\")].image\",\"pause\":\"false\"}]","openshift.io/generated-by":"OpenShiftWebConsole"},"generation":4,"labels":{"app":"mautic-openshift","app.kubernetes.io/component":"mautic-openshift","app.kubernetes.io/instance":"mautic-openshift","app.kubernetes.io/part-of":"mautic-app"},"managedFields":[{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:spec":{"f:template":{"f:spec":{"f:containers":{"k:{\"name\":\"mautic-openshift\"}":{"f:image":{}}}}}}},"manager":"openshift-controller-manager","operation":"Update","time":"2020-11-16T18:39:27Z"},{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{".":{},"f:alpha.image.policy.openshift.io/resolve-names":{},"f:app.openshift.io/vcs-ref":{},"f:app.openshift.io/vcs-uri":{},"f:image.openshift.io/triggers":{},"f:openshift.io/generated-by":{}},"f:labels":{".":{},"f:app":{},"f:app.kubernetes.io/component":{},"f:app.kubernetes.io/instance":{},"f:app.kubernetes.io/part-of":{}}},"f:spec":{"f:progressDeadlineSeconds":{},"f:replicas":{},"f:revisionHistoryLimit":{},"f:selector":{"f:matchLabels":{".":{},"f:app":{}}},"f:strategy":{"f:rollingUpdate":{".":{},"f:maxSurge":{},"f:maxUnavailable":{}},"f:type":{}},"f:template":{"f:metadata":{"f:labels":{".":{},"f:app":{},"f:deploymentconfig":{}}},"f:spec":{"f:containers":{"k:{\"name\":\"mautic-openshift\"}":{".":{},"f:imagePullPolicy":{},"f:name":{},"f:resources":{},"f:terminationMessagePath":{},"f:terminationMessagePolicy":{}}},"f:dnsPolicy":{},"f:restartPolicy":{},"f:schedulerName":{},"f:securityContext":{},"f:terminationGracePeriodSeconds":{}}}}},"manager":"Mozilla","operation":"Update","time":"2020-11-16T19:18:08Z"},{"apiVersion":"apps/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{"f:deployment.kubernetes.io/revision":{}}},"f:status":{"f:conditions":{".":{},"k:{\"type\":\"Available\"}":{".":{},"f:lastTransitionTime":{},"f:lastUpdateTime":{},"f:message":{},"f:reason":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Progressing\"}":{".":{},"f:lastTransitionTime":{},"f:lastUpdateTime":{},"f:message":{},"f:reason":{},"f:status":{},"f:type":{}}},"f:observedGeneration":{},"f:replicas":{},"f:unavailableReplicas":{},"f:updatedReplicas":{}}},"manager":"kube-controller-manager","operation":"Update","time":"2020-11-16T19:18:08Z"}],"name":"mautic-openshift","namespace":"de0974-tools"},"spec":{"progressDeadlineSeconds":600,"replicas":1,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app":"mautic-openshift"}},"strategy":{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"mautic-openshift","deploymentconfig":"mautic-openshift"}},"spec":{"containers":[{"env":[{"name":"MAUTIC_DB_HOST","value":"mariadb"},{"name":"MAUTIC_DB_USER","value":"mautic"},{"name":"MAUTIC_DB_NAME","value":"mautic"},{"name":"MAUTIC_DB_PASSWORD","value":"mautic"}],"image":"image-registry.openshift-image-registry.svc:5000/pltfrm-tools/mautic-openshift@sha256:be2cd008c24742f25a968af90d5970313243332d9cdd164e1dc8944f6d06af4b","imagePullPolicy":"Always","name":"mautic-openshift","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File"}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30}}}}
         openshift.io/generated-by: OpenShiftWebConsole
       generation: 11
       labels:
@@ -171,7 +183,7 @@ objects:
               name: ${NAME}-github-webhook-secret
           type: GitHub
         - type: ConfigChange
-    metadata:
+    metadata: 
       annotations:
         app.openshift.io/vcs-ref: main
         app.openshift.io/vcs-uri: ${GIT_REPO}
@@ -205,7 +217,7 @@ objects:
   - apiVersion: route.openshift.io/v1
     kind: Route
     spec:
-      host: ${NAME}-pltfrm-tools.apps.pathfinder.aro.devops.gov.bc.ca
+      host: ${NAME}-de0974-tools.apps.silver.devops.gov.bc.ca
       port:
         targetPort: 8080-tcp
       to:
@@ -372,15 +384,16 @@ objects:
               terminationMessagePolicy: File
               volumeMounts:
                 - mountPath: /var/lib/mysql/data
-                  name: mariadb-data
+                  name: ${NAME}-mariadb-data
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
           securityContext: {}
           terminationGracePeriodSeconds: 30
           volumes:
-            - emptyDir: {}
-              name: mariadb-data
+            - persistentVolumeClaim:
+                claimName: ${NAME}-mariadb-data
+              name: ${NAME}-mariadb-data
       test: false
       triggers:
         - imageChangeParams:
