@@ -217,7 +217,7 @@ objects:
   - apiVersion: route.openshift.io/v1
     kind: Route
     spec:
-      host: ${NAME}-${NAMESPACE}.apps.silver.devops.gov.bc.ca
+      host: ${NAME}-${NAMESPACE}.${HOSTADDRESS}
       port:
         targetPort: 8080-tcp
       to:
@@ -433,7 +433,11 @@ parameters:
   displayName: Git repository
   description: the git repo to build from
   value: https://github.com/patricksimonian/mautic-openshift
-  - name: NAMESPACE
-  displayName: namespace
+- name: NAMESPACE
+  displayName: Namespace
   description: the namespace of the app
   value: de0974-tools
+- name: HOSTADDRESS
+  displayName: Host name
+  description: The cluster host address
+  value: apps.silver.devops.gov.bc.ca
