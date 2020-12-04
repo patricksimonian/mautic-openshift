@@ -15,9 +15,10 @@ To Run:
 
 2. **Process and apply the mautic.yaml**
 
-    ```oc process -f ./openshift/mautic.yaml -p NAME=<app-name> -p GIT_REF=<branch-name> -p GIT_REPO=https://github.com/<git-account>/<git-repo> -p NAMESPACE=<namespace>| oc apply -f - -n <namespace>```
+    ```oc process -f ./openshift/mautic.yaml -p NAME=<app-name> -p GIT_REF=<branch-name> -p GIT_REPO=https://github.com/<git-account>/<git-repo> -p NAMESPACE=<namespace> -p HOSTADDRESS=<host-address> | oc apply -f - -n <namespace>```
 
-    - Example: ```oc process -f ./openshift/mautic.yaml -p NAME=mautic -p GIT_REF=mautic3 -p GIT_REPO=https://github.com/patricksimonian/mautic-openshift -p NAMESPACE=pltfrm-tools | oc apply -f - -n pltfrm-tools```
+    - Example: ```oc process -f ./openshift/mautic.yaml -p NAME=mautic -p GIT_REF=mautic3 -p GIT_REPO=https://github.com/patricksimonian/mautic-openshift -p NAMESPACE=pltfrm-tools -p HOSTADDRESS=apps.pathfinder.aro.devops.gov.bc.ca | oc apply -f - -n pltfrm-tools```
+    
 
 3. **Rollout the database and app**
 
