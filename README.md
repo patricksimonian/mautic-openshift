@@ -61,7 +61,7 @@ Additionally, you may need to configure your security settings in Gmail to turn 
 ## Mautic Workflow
 
 ### Segment
-In Mautic, an email distribution list is called a `segment`. A segment can easily be created in the Segments tab by giving it a name.
+In Mautic, an email distribution list is called a `segment`. A segment can easily be created in the `Segments` tab by giving it a name.
 
 ### Form
 Forms allow users to subscribe/unsubscribe themselves using the Mautic Subscription App. For each segment two forms should be created: subscribe and unsubscribe.
