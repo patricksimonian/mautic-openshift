@@ -58,4 +58,16 @@ Additionally, you may need to configure your security settings in Gmail to turn 
     On the top right of the page, you will see a cog for the settings. Go to Configuration -> Email Settings.
     Scrolling down, you will see the "Default Frequency Rule". This number will be the maximum number of emails that can be sent to a user in the given time period. Setting this number to a reasonable value will help prevent unintentional email spamming.
 
+## Mautic Workflow
 
+### Segment
+In Mautic, an email distribution list is called a `segment`. A segment can easily be created in the Segments tab by giving it a name.
+
+### Form
+Forms allow users to subscribe/unsubscribe themselves using the Mautic Subscription App. For each segment two forms should be created: subscribe and unsubscribe.
+When creating a form it is important that the `Successful Submit Action` is set to Redirect URL and that the Redirect URL/Message is set to https://mautic-app-url/subscribed for the subscribed form and https://mautic-app-url/unsubscribed for the unsubscribe form.
+Under the `Fields` tab, a new `Email` field should be created. 
+Under the `Actions` tab, a new submit action to `Modify contact segments` should be created. You can choose to `Add contact to selected segment(s)` for the subscribe form or `Remove contact from selected segment(s)` for the unsubscribe form.
+
+### Email
+A `New Segment Email` can be set up under the `Channels` tab. For a basic layout the Blank theme can be used. The contents of the email can be set in the `builder`.
