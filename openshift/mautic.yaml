@@ -1,6 +1,24 @@
 kind: Template
 apiVersion: v1
 objects:
+  - apiVersion: image.openshift.io/v1
+    kind: ImageStream
+    metadata:
+      labels:
+        app: mariadb
+      name: mariadb
+    spec:
+      lookupPolicy:
+        local: false
+      tags:
+      - annotations: null
+        from:
+          kind: DockerImage
+          name: mariadb:10.2
+        importPolicy: {}
+        name: "10.2"
+        referencePolicy:
+          type: Source
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
@@ -348,8 +366,7 @@ objects:
                     secretKeyRef:
                       key: database-name
                       name: ${NAME}-db
-              image: >-
-                image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
+              image: mariadb:10.2
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 3
@@ -404,8 +421,7 @@ objects:
               kind: ImageStreamTag
               name: 'mariadb:10.2'
               namespace: openshift
-            lastTriggeredImage: >-
-              image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
+            lastTriggeredImage: mariadb:10.2
           type: ImageChange
         - type: ConfigChange
     metadata:
