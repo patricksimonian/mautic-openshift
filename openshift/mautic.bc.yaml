@@ -1,31 +1,6 @@
 kind: Template
 apiVersion: v1
 objects:
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: ${NAME}-php-config
-    spec:
-      accessModes: 
-      - ReadWriteOnce
-      volumeMode: Filesystem
-      resources:
-        requests:
-          storage: 1Gi
-      storageClassName: netapp-file-standard
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: ${NAME}-mariadb-data
-    spec:
-      accessModes: 
-      - ReadWriteOnce
-      volumeMode: Filesystem
-      resources:
-        requests:
-          storage: 1Gi
-      storageClassName: netapp-file-standard
-
   - apiVersion: build.openshift.io/v1
     kind: BuildConfig
     spec:

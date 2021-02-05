@@ -12,9 +12,9 @@ spec:
         - - name: clone
             template: clone
             arguments: {}
-        - - name: build-deploy-mautic-tools
-            template: build-deploy-mautic-tools
-            arguments: {}
+        # - - name: build-mautic-tools
+        #     template: build-mautic-tools
+        #     arguments: {}
         - - name: deploy-mautic-dev
             template: deploy-mautic-dev
             arguments: {}    
@@ -50,7 +50,7 @@ spec:
           - name: work
             mountPath: /mnt/vol
 
-    - name: build-deploy-mautic-tools
+    - name: build-mautic-tools
       arguments: {}
       inputs: {}
       outputs: {}
@@ -79,6 +79,7 @@ spec:
             -p NAMESPACE={{workflow.parameters.TOOLS_NAMESPACE}}
             -p HOSTADDRESS=apps.pathfinder.aro.devops.gov.bc.ca 
             | oc apply -f - -n {{workflow.parameters.TOOLS_NAMESPACE}};
+            oc start-build -w {{workflow.parameters.NAME}};
             oc tag {{workflow.parameters.TOOLS_NAMESPACE}}/{{workflow.parameters.NAME}}:{{workflow.parameters.IMAGE_TAG}}
             {{workflow.parameters.DEV_NAMESPACE}}/{{workflow.parameters.NAME}}:{{workflow.parameters.IMAGE_TAG}} 
         workingDir: /mnt/vol/mautic-openshift
