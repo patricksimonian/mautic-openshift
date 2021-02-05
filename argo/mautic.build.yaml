@@ -1,0 +1,173 @@
+metadata:
+  name: mautic-subscribe-workflow
+  namespace: de0974-tools
+spec:
+  templates:
+    - name: main
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      steps:
+        - - name: clone
+            template: clone
+            arguments: {}
+        - - name: build-deploy-mautic-tools
+            template: build-deploy-mautic-tools
+            arguments: {}
+        - - name: deploy-mautic-dev
+            template: deploy-mautic-dev
+            arguments: {}    
+        # - - name: deploy-mautic-test
+        #     template: deploy-mautic-test
+        #     arguments: {}  
+
+    - name: clone
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      container:
+        name: ''
+        image: 'docker.io/alpine/git:v2.26.2'
+        args:
+          - clone
+          - '--depth'
+          - '1'
+          - '--branch'
+          - '{{workflow.parameters.BRANCH}}'
+          - '--single-branch'
+          - '{{workflow.parameters.REPO}}'
+        workingDir: /mnt/vol
+        resources:
+          limits:
+            cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 256Mi
+        volumeMounts:
+          - name: work
+            mountPath: /mnt/vol
+
+    - name: build-deploy-mautic-tools
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      container:
+        name: ''
+        image: 'docker.io/openshift/origin-cli:latest'
+        command:
+          - sh
+          - '-c'
+        args:
+          - >-
+            oc process -f ./openshift/secret.yaml -p NAME=mautic 
+            -p DATABASE_USER=mautic_db_test 
+            -p DATABASE_NAME=mautic_db 
+            -p DATABASE_USER_PASSWORD=password 
+            -p DATABASE_ROOT_PASSWORD=password2 
+            | oc apply -f - -n de0974-tools;
+            oc process -f ./openshift/mautic.yaml 
+            -p NAME=mautic 
+            -p GIT_REF=mautic3 
+            -p GIT_REPO=https://github.com/patricksimonian/mautic-openshift 
+            -p NAMESPACE=de0974-tools 
+            -p HOSTADDRESS=apps.pathfinder.aro.devops.gov.bc.ca 
+            | oc apply -f - -n de0974-tools
+        workingDir: /mnt/vol/Mautic-Subscription-App
+        resources:
+          limits:
+            cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 256Mi
+        volumeMounts:
+          - name: work
+            mountPath: /mnt/vol
+
+    - name: deploy-mautic-dev
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      container:
+        name: ''
+        image: 'docker.io/openshift/origin-cli:latest'
+        command:
+          - sh
+          - '-c'
+        args: 
+          - >-
+            oc delete configmap mautic-form-config;
+            oc delete configmap mautic-sso-config;
+            oc create configmap mautic-form-config -n {{workflow.parameters.DEV_NAMESPACE}} --from-file=public/config/form.json;
+            oc create configmap mautic-sso-config -n {{workflow.parameters.DEV_NAMESPACE}} --from-file=public/config/sso.json;
+            oc process -f openshift/mautic.dc.yaml 
+            -p SUFFIX={{workflow.parameters.SUFFIX}}
+            -p IMAGE_NAME={{workflow.parameters.NAME}} 
+            -p IMAGE_TAG={{workflow.parameters.IMAGE_TAG}} 
+            -p TARGET_NAMESPACE=de0974-dev
+            -n {{workflow.parameters.DEV_NAMESPACE}}
+            | oc apply -f - -n {{workflow.parameters.DEV_NAMESPACE}}
+        workingDir: /mnt/vol/Mautic-Subscription-App
+        resources:
+          limits:
+            cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 256Mi
+        volumeMounts:
+          - name: work
+            mountPath: /mnt/vol
+
+    # - name: deploy-mautic-test
+    #   arguments: {}
+    #   inputs: {}
+    #   outputs: {}
+    #   metadata: {}
+    #   container:
+    #     name: ''
+    #     image: 'docker.io/openshift/origin-cli:latest'
+    #     command:
+    #       - sh
+    #       - '-c'
+    #     args: 
+    #       - >-
+    #         oc process -f mautic.dc.yaml 
+    #         -p SUFFIX={{workflow.parameters.SUFFIX}} 
+    #         -n {{workflow.parameters.TEST_NAMESPACE}}
+    #         | oc apply -f - -n {{workflow.parameters.TEST_NAMESPACE}}
+    #     workingDir: /mnt/vol/Mautic-Subscription-App
+    #     resources:
+    #       limits:
+    #         cpu: 100m
+    #         memory: 512Mi
+    #       requests:
+    #         cpu: 50m
+    #         memory: 256Mi
+    #     volumeMounts:
+    #       - name: work
+    #         mountPath: /mnt/vol
+
+  entrypoint: main
+  arguments: {}
+  serviceAccountName: workflow-creator
+  volumeClaimTemplates:
+    - metadata:
+        name: work
+        creationTimestamp: null
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 128Mi
+        storageClassName: netapp-file-standard
+      status: {}
+  imagePullSecrets:
+    - name: dockerhub-secret-mautic
+
