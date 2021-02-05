@@ -1,55 +1,6 @@
 kind: Template
 apiVersion: v1
 objects:
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: ${NAME}-php-config
-    spec:
-      accessModes: 
-      - ReadWriteOnce
-      volumeMode: Filesystem
-      resources:
-        requests:
-          storage: 1Gi
-      storageClassName: netapp-file-standard
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: ${NAME}-mariadb-data
-    spec:
-      accessModes: 
-      - ReadWriteOnce
-      volumeMode: Filesystem
-      resources:
-        requests:
-          storage: 1Gi
-      storageClassName: netapp-file-standard
-  - apiVersion: v1
-    kind: Service
-    spec:
-      ports:
-        - name: 8080-tcp
-          port: 8080
-          protocol: TCP
-          targetPort: 8080
-      selector:
-        deploymentconfig: ${NAME}
-      sessionAffinity: None
-      type: ClusterIP
-    metadata:
-      annotations:
-        app.openshift.io/vcs-ref: main
-        app.openshift.io/vcs-uri: ${GIT_REPO}
-        openshift.io/generated-by: OpenShiftWebConsole
-      labels:
-        app: ${NAME}
-        deploymentConfig: ${NAME}
-        app.kubernetes.io/component: ${NAME}
-        app.kubernetes.io/instance: ${NAME}
-        app.kubernetes.io/part-of: ${NAME}-app
-      name: ${NAME}
-
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
     spec:
@@ -150,70 +101,6 @@ objects:
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: ${NAME}-app
       name: ${NAME}
-  - apiVersion: build.openshift.io/v1
-    kind: BuildConfig
-    spec:
-      failedBuildsHistoryLimit: 5
-      nodeSelector: null
-      output:
-        to:
-          kind: ImageStreamTag
-          name: '${NAME}:latest'
-      postCommit: {}
-      resources: {}
-      runPolicy: Serial
-      source:
-        contextDir: apache
-        git:
-          ref: ${GIT_REF}
-          uri: ${GIT_REPO}
-        type: Git
-      strategy:
-        dockerStrategy:
-          dockerfilePath: Dockerfile
-        type: Docker
-      successfulBuildsHistoryLimit: 5
-      triggers:
-        - generic:
-            secretReference:
-              name: ${NAME}-generic-webhook-secret
-          type: Generic
-        - github:
-            secretReference:
-              name: ${NAME}-github-webhook-secret
-          type: GitHub
-        - type: ConfigChange
-    metadata: 
-      annotations:
-        app.openshift.io/vcs-ref: main
-        app.openshift.io/vcs-uri: ${GIT_REPO}
-        openshift.io/generated-by: OpenShiftWebConsole
-      labels:
-        app: ${NAME}
-        group: ${NAME}
-        buildConfig: ${NAME}
-        app.kubernetes.io/component: ${NAME}
-        app.kubernetes.io/instance: ${NAME}
-        app.kubernetes.io/part-of: ${NAME}-app
-      name: ${NAME}
-  - apiVersion: image.openshift.io/v1
-    kind: ImageStream
-    spec:
-      lookupPolicy:
-        local: false
-    metadata:
-      annotations:
-        app.openshift.io/vcs-ref: main
-        app.openshift.io/vcs-uri: ${GIT_REPO}
-        openshift.io/generated-by: OpenShiftWebConsole
-      generation: 1
-      labels:
-        app: ${NAME}
-        buildConfig: ${NAME}
-        app.kubernetes.io/component: ${NAME}
-        app.kubernetes.io/instance: ${NAME}
-        app.kubernetes.io/part-of: ${NAME}-app
-      name: ${NAME}
   - apiVersion: route.openshift.io/v1
     kind: Route
     spec:
@@ -235,6 +122,30 @@ objects:
         app.kubernetes.io/instance: ${NAME}
         app.kubernetes.io/part-of: ${NAME}-app
       name: ${NAME}
+  - apiVersion: v1
+    kind: Service
+    spec:
+      ports:
+        - name: 8080-tcp
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        deploymentconfig: ${NAME}
+      sessionAffinity: None
+      type: ClusterIP
+    metadata:
+      annotations:
+        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-uri: ${GIT_REPO}
+        openshift.io/generated-by: OpenShiftWebConsole
+      labels:
+        app: ${NAME}
+        deploymentConfig: ${NAME}
+        app.kubernetes.io/component: ${NAME}
+        app.kubernetes.io/instance: ${NAME}
+        app.kubernetes.io/part-of: ${NAME}-app
+      name: ${NAME} 
   - kind: ConfigMap
     apiVersion: v1
     metadata:
@@ -419,7 +330,6 @@ objects:
         group: ${NAME}
         app: ${NAME}
       name: ${NAME}-db
-  
 parameters:
 - name: NAME
   displayName: name
