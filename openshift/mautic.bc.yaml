@@ -34,7 +34,7 @@ objects:
       output:
         to:
           kind: ImageStreamTag
-          name: '${NAME}:latest'
+          name: '${NAME}:${IMAGE_TAG}'
       postCommit: {}
       resources: {}
       runPolicy: Serial
@@ -112,3 +112,7 @@ parameters:
   displayName: Host name
   description: The cluster host address
   value: apps.silver.devops.gov.bc.ca
+- description: A name used for all objects
+  displayName: IMAGE_TAG
+  name: IMAGE_TAG
+  required: true

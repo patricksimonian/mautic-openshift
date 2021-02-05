@@ -1,5 +1,5 @@
 metadata:
-  name: mautic-subscribe-workflow
+  name: mautic-build-workflow
   namespace: de0974-tools
 spec:
   templates:
@@ -63,20 +63,25 @@ spec:
           - '-c'
         args:
           - >-
-            oc process -f ./openshift/secret.yaml -p NAME=mautic 
+            oc delete route mautic;
+            oc process -f ./openshift/secret.yaml 
+            -p NAME={{workflow.parameters.NAME}}
             -p DATABASE_USER=mautic_db_test 
             -p DATABASE_NAME=mautic_db 
             -p DATABASE_USER_PASSWORD=password 
             -p DATABASE_ROOT_PASSWORD=password2 
-            | oc apply -f - -n de0974-tools;
-            oc process -f ./openshift/mautic.yaml 
-            -p NAME=mautic 
-            -p GIT_REF=mautic3 
-            -p GIT_REPO=https://github.com/patricksimonian/mautic-openshift 
-            -p NAMESPACE=de0974-tools 
+            | oc apply -f - -n {{workflow.parameters.TOOLS_NAMESPACE}};
+            oc process -f ./openshift/mautic.bc.yaml 
+            -p IMAGE_TAG={{workflow.parameters.IMAGE_TAG}} 
+            -p NAME={{workflow.parameters.NAME}}
+            -p GIT_REF={{workflow.parameters.BRANCH}}
+            -p GIT_REPO={{workflow.parameters.REPO}}
+            -p NAMESPACE={{workflow.parameters.TOOLS_NAMESPACE}}
             -p HOSTADDRESS=apps.pathfinder.aro.devops.gov.bc.ca 
-            | oc apply -f - -n de0974-tools
-        workingDir: /mnt/vol/Mautic-Subscription-App
+            | oc apply -f - -n {{workflow.parameters.TOOLS_NAMESPACE}};
+            oc tag {{workflow.parameters.TOOLS_NAMESPACE}}/{{workflow.parameters.NAME}}:{{workflow.parameters.IMAGE_TAG}}
+            {{workflow.parameters.DEV_NAMESPACE}}/{{workflow.parameters.NAME}}:{{workflow.parameters.IMAGE_TAG}} 
+        workingDir: /mnt/vol/mautic-openshift
         resources:
           limits:
             cpu: 100m
@@ -101,18 +106,16 @@ spec:
           - '-c'
         args: 
           - >-
-            oc delete configmap mautic-form-config;
-            oc delete configmap mautic-sso-config;
-            oc create configmap mautic-form-config -n {{workflow.parameters.DEV_NAMESPACE}} --from-file=public/config/form.json;
-            oc create configmap mautic-sso-config -n {{workflow.parameters.DEV_NAMESPACE}} --from-file=public/config/sso.json;
-            oc process -f openshift/mautic.dc.yaml 
-            -p SUFFIX={{workflow.parameters.SUFFIX}}
-            -p IMAGE_NAME={{workflow.parameters.NAME}} 
+            oc process -f ./openshift/mautic.dc.yaml 
+            -p NAME={{workflow.parameters.NAME}} 
             -p IMAGE_TAG={{workflow.parameters.IMAGE_TAG}} 
-            -p TARGET_NAMESPACE=de0974-dev
+            -p GIT_REF={{workflow.parameters.BRANCH}}
+            -p GIT_REPO={{workflow.parameters.REPO}}
+            -p NAMESPACE={{workflow.parameters.TOOLS_NAMESPACE}}
+            -p HOSTADDRESS=apps.pathfinder.aro.devops.gov.bc.ca
             -n {{workflow.parameters.DEV_NAMESPACE}}
             | oc apply -f - -n {{workflow.parameters.DEV_NAMESPACE}}
-        workingDir: /mnt/vol/Mautic-Subscription-App
+        workingDir: /mnt/vol/mautic-openshift
         resources:
           limits:
             cpu: 100m
@@ -170,4 +173,3 @@ spec:
       status: {}
   imagePullSecrets:
     - name: dockerhub-secret-mautic
-

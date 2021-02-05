@@ -53,7 +53,7 @@ objects:
                 - name: MAUTIC_DB_PORT
                   value: "3306"
               image: >-
-                image-registry.openshift-image-registry.svc:5000/${NAMESPACE}/${NAME}
+                image-registry.openshift-image-registry.svc:5000/${NAMESPACE}/${NAME}:${IMAGE_TAG}
               imagePullPolicy: Always
               name: ${NAME}
               resources:
@@ -351,3 +351,7 @@ parameters:
   displayName: Host name
   description: The cluster host address
   value: apps.silver.devops.gov.bc.ca
+- description: A name used for all objects
+  displayName: IMAGE_TAG
+  name: IMAGE_TAG
+  required: true
