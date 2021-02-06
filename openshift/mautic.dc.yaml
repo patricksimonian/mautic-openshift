@@ -338,8 +338,6 @@ objects:
               kind: ImageStreamTag
               name: 'mariadb:10.2'
               namespace: openshift
-            lastTriggeredImage: >-
-              image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
           type: ImageChange
         - type: ConfigChange
     metadata:
