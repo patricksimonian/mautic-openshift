@@ -329,17 +329,6 @@ objects:
                 claimName: ${NAME}-mariadb-data
               name: ${NAME}-mariadb-data
       test: false
-      triggers:
-        - imageChangeParams:
-            automatic: true
-            containerNames:
-              - mariadb
-            from:
-              kind: ImageStreamTag
-              name: 'mariadb:10.2'
-              namespace: openshift
-          type: ImageChange
-        - type: ConfigChange
     metadata:
       annotations:
         app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"${NAME}"}]'

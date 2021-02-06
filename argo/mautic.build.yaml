@@ -63,14 +63,6 @@ spec:
           - '-c'
         args:
           - >-
-            oc delete route mautic;
-            oc process -f ./openshift/secret.yaml 
-            -p NAME={{workflow.parameters.NAME}}
-            -p DATABASE_USER=mautic_db_test 
-            -p DATABASE_NAME=mautic_db 
-            -p DATABASE_USER_PASSWORD=password 
-            -p DATABASE_ROOT_PASSWORD=password2 
-            | oc apply -f - -n {{workflow.parameters.TOOLS_NAMESPACE}};
             oc process -f ./openshift/mautic.bc.yaml 
             -p IMAGE_TAG={{workflow.parameters.IMAGE_TAG}} 
             -p NAME={{workflow.parameters.NAME}}
@@ -107,6 +99,15 @@ spec:
           - '-c'
         args: 
           - >-
+            oc project -n {{workflow.parameters.DEV_NAMESPACE}};
+            oc delete route {{workflow.parameters.NAME}};
+            oc process -f ./openshift/secret.yaml 
+            -p NAME={{workflow.parameters.NAME}}
+            -p DATABASE_USER=mautic_db_test 
+            -p DATABASE_NAME=mautic_db 
+            -p DATABASE_USER_PASSWORD=password 
+            -p DATABASE_ROOT_PASSWORD=password2
+            | oc apply -f - -n {{workflow.parameters.DEV_NAMESPACE}};
             oc process -f ./openshift/mautic.dc.yaml 
             -p NAME={{workflow.parameters.NAME}} 
             -p IMAGE_TAG={{workflow.parameters.IMAGE_TAG}} 
