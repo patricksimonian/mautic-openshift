@@ -128,35 +128,6 @@ spec:
           - name: work
             mountPath: /mnt/vol
 
-    # - name: deploy-mautic-test
-    #   arguments: {}
-    #   inputs: {}
-    #   outputs: {}
-    #   metadata: {}
-    #   container:
-    #     name: ''
-    #     image: 'docker.io/openshift/origin-cli:latest'
-    #     command:
-    #       - sh
-    #       - '-c'
-    #     args: 
-    #       - >-
-    #         oc process -f mautic.dc.yaml 
-    #         -p SUFFIX={{workflow.parameters.SUFFIX}} 
-    #         -n {{workflow.parameters.TEST_NAMESPACE}}
-    #         | oc apply -f - -n {{workflow.parameters.TEST_NAMESPACE}}
-    #     workingDir: /mnt/vol/Mautic-Subscription-App
-    #     resources:
-    #       limits:
-    #         cpu: 100m
-    #         memory: 512Mi
-    #       requests:
-    #         cpu: 50m
-    #         memory: 256Mi
-    #     volumeMounts:
-    #       - name: work
-    #         mountPath: /mnt/vol
-
   entrypoint: main
   arguments: {}
   serviceAccountName: workflow-creator

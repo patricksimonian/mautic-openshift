@@ -283,8 +283,7 @@ objects:
                     secretKeyRef:
                       key: database-name
                       name: ${NAME}-db
-              image: >-
-                image-registry.openshift-image-registry.svc:5000/openshift/mariadb@sha256:e3e8e56268c7c963a368457d92759f328796a99332a277c766767c5302fb0793
+              image: docker.io/mariadb:latest
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 3
