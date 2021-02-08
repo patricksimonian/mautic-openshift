@@ -330,9 +330,8 @@ objects:
             - persistentVolumeClaim:
                 claimName: ${NAME}-mariadb-data
               name: ${NAME}-mariadb-data
-            - persistentVolumeClaim:
-                claimName: ${NAME}-mariadb-docker
-              name: ${NAME}-mariadb-docker
+            - name: ${NAME}-mariadb-docker
+              emptyDir: {}
       test: false
     metadata:
       annotations:
