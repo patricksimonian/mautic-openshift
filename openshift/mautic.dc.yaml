@@ -283,7 +283,7 @@ objects:
                     secretKeyRef:
                       key: database-name
                       name: ${NAME}-db
-              image: docker.io/mariadb:10.1
+              image: docker.io/mariadb:10.2
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 3
@@ -360,7 +360,6 @@ parameters:
 - name: NAMESPACE
   displayName: Namespace
   description: the namespace of the app
-  value: de0974-tools
 - name: HOSTADDRESS
   displayName: Host name
   description: The cluster host address

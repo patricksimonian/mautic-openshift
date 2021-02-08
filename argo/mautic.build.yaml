@@ -12,15 +12,12 @@ spec:
         - - name: clone
             template: clone
             arguments: {}
-        # - - name: build-mautic-tools
-        #     template: build-mautic-tools
-        #     arguments: {}
+        - - name: build-mautic-tools
+            template: build-mautic-tools
+            arguments: {}
         - - name: deploy-mautic-dev
             template: deploy-mautic-dev
-            arguments: {}    
-        # - - name: deploy-mautic-test
-        #     template: deploy-mautic-test
-        #     arguments: {}  
+            arguments: {} 
 
     - name: clone
       arguments: {}
@@ -103,6 +100,10 @@ spec:
             oc delete route {{workflow.parameters.NAME}};
             oc process -f ./openshift/secret.yaml 
             -p NAME={{workflow.parameters.NAME}}
+            -p DATABASE_USER={{workflow.parameters.DATABASE_USER}}
+            -p DATABASE_NAME={{workflow.parameters.DATABASE_NAME}}
+            -p DATABASE_USER_PASSWORD={{workflow.parameters.DATABASE_USER_PASSWORD}}
+            -p DATABASE_ROOT_PASSWORD={{workflow.parameters.DATABASE_ROOT_PASSWORD}}
             -p DATABASE_USER=mautic_db_test 
             -p DATABASE_NAME=mautic_db 
             -p DATABASE_USER_PASSWORD=password 
@@ -113,7 +114,7 @@ spec:
             -p IMAGE_TAG={{workflow.parameters.IMAGE_TAG}} 
             -p GIT_REF={{workflow.parameters.BRANCH}}
             -p GIT_REPO={{workflow.parameters.REPO}}
-            -p NAMESPACE={{workflow.parameters.TOOLS_NAMESPACE}}
+            -p NAMESPACE={{workflow.parameters.DEV_NAMESPACE}}
             -p HOSTADDRESS=apps.pathfinder.aro.devops.gov.bc.ca
             -n {{workflow.parameters.DEV_NAMESPACE}}
             | oc apply -f - -n {{workflow.parameters.DEV_NAMESPACE}}
