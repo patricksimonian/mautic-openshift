@@ -283,7 +283,7 @@ objects:
                     secretKeyRef:
                       key: database-name
                       name: ${NAME}-db
-              image: docker.io/mariadb:10.2
+              image: docker.io/mariadb:10.1
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 3
