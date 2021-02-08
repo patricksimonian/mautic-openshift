@@ -319,6 +319,8 @@ objects:
               volumeMounts:
                 - mountPath: /var/lib/mysql/data
                   name: ${NAME}-mariadb-data
+                - mountPath: /var/lib/mysql
+                  name: ${NAME}-mariadb-docker
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -328,6 +330,9 @@ objects:
             - persistentVolumeClaim:
                 claimName: ${NAME}-mariadb-data
               name: ${NAME}-mariadb-data
+            - persistentVolumeClaim:
+                claimName: ${NAME}-mariadb-docker
+              name: ${NAME}-mariadb-docker
       test: false
     metadata:
       annotations:
