@@ -12,9 +12,9 @@ spec:
         - - name: clone
             template: clone
             arguments: {}
-        - - name: build-mautic-tools
-            template: build-mautic-tools
-            arguments: {}
+        # - - name: build-mautic-tools
+        #     template: build-mautic-tools
+        #     arguments: {}
         - - name: deploy-mautic-dev
             template: deploy-mautic-dev
             arguments: {} 
@@ -99,15 +99,7 @@ spec:
             oc project -n {{workflow.parameters.DEV_NAMESPACE}};
             oc delete route {{workflow.parameters.NAME}};
             oc process -f ./openshift/secret.yaml 
-            -p NAME={{workflow.parameters.NAME}}
-            -p DATABASE_USER={{workflow.parameters.DATABASE_USER}}
-            -p DATABASE_NAME={{workflow.parameters.DATABASE_NAME}}
-            -p DATABASE_USER_PASSWORD={{workflow.parameters.DATABASE_USER_PASSWORD}}
-            -p DATABASE_ROOT_PASSWORD={{workflow.parameters.DATABASE_ROOT_PASSWORD}}
-            -p DATABASE_USER=mautic_db_test 
-            -p DATABASE_NAME=mautic_db 
-            -p DATABASE_USER_PASSWORD=password 
-            -p DATABASE_ROOT_PASSWORD=password2
+            -p MYSQL_ROOT_PASSWORD=password
             | oc apply -f - -n {{workflow.parameters.DEV_NAMESPACE}};
             oc process -f ./openshift/mautic.dc.yaml 
             -p NAME={{workflow.parameters.NAME}} 
