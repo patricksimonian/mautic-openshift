@@ -99,7 +99,8 @@ spec:
             oc project -n {{workflow.parameters.DEV_NAMESPACE}};
             oc delete route {{workflow.parameters.NAME}};
             oc process -f ./openshift/secret.yaml 
-            -p MYSQL_ROOT_PASSWORD=password
+            -p MYSQL_ROOT_PASSWORD={{workflow.parameters.MYSQL_ROOT_PASSWORD}}
+            -p NAME={{workflow.parameters.NAME}}
             | oc apply -f - -n {{workflow.parameters.DEV_NAMESPACE}};
             oc process -f ./openshift/mautic.dc.yaml 
             -p NAME={{workflow.parameters.NAME}} 

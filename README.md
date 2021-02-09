@@ -78,4 +78,4 @@ A `New Segment Email` can be set up under the `Channels` tab. For a basic layout
 
 ## Argo
 
-argo submit argo/mautic.build.yaml -p BRANCH='argo' -p REPO='https://github.com/patricksimonian/mautic-openshift' -p  TOOLS_NAMESPACE='de0974-tools' -p DEV_NAMESPACE='de0974-dev' -p TEST_NAMESPACE='de0974-test' -p PROD_NAMESPACE='de0974-prod' -p SUFFIX='-test' -p NAME='mautic-test' -p IMAGE_TAG='test' -p DATABASE_USER=mautic_db_test -p DATABASE_NAME=mautic_db -p DATABASE_USER_PASSWORD=password -p DATABASE_ROOT_PASSWORD=password2
+argo submit argo/mautic.build.yaml -p BRANCH='argo' -p REPO='https://github.com/patricksimonian/mautic-openshift' -p  TOOLS_NAMESPACE='de0974-tools' -p DEV_NAMESPACE='de0974-dev' -p TEST_NAMESPACE='de0974-test' -p PROD_NAMESPACE='de0974-prod' -p SUFFIX='-test' -p NAME='mautic-test' -p IMAGE_TAG='test' -p MYSQL_ROOT_PASSWORD=password
