@@ -36,7 +36,7 @@ objects:
         - type: ConfigChange
     metadata: 
       annotations:
-        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-ref: ${GIT_REF}
         app.openshift.io/vcs-uri: ${GIT_REPO}
         openshift.io/generated-by: OpenShiftWebConsole
       labels:
@@ -54,7 +54,7 @@ objects:
         local: false
     metadata:
       annotations:
-        app.openshift.io/vcs-ref: main
+        app.openshift.io/vcs-ref: ${GIT_REF}
         app.openshift.io/vcs-uri: ${GIT_REPO}
         openshift.io/generated-by: OpenShiftWebConsole
       generation: 1
